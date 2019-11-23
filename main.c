@@ -92,9 +92,8 @@ void draw_point(u8 x, u8 y) {
 	PIXEL_BUFFER[y]|=1<<x;	
 }
 
-u8 randm(u8 min, u8 max) {
-	u16 counter = TIM4->CNT;
-	return (counter % max) + min;
+u16 randm(u16 min, u16 max) {
+	return TIM4->CNT;
 }
 
 void add_body(u8 x, u8 y) {
@@ -136,8 +135,9 @@ void move_snake() {
 void init_game() {
 	snakesz=0;
 	snake_dir=UP;
-	foodx = randm(0,8);
-	foody = randm(0,8);
+	u16 rand = randm(0,65535);
+	foodx = (u8) (((0x1100 & rand) >> 8) % 7);
+	foody = (u8) ((0x0011 & rand) % 7);
 	add_body(4,4);
 	add_body(0,0);
 
@@ -178,8 +178,9 @@ void update() {
 	time=0;
 
 	if (foodx==snakebx[0] && foody==snakeby[0]) {
-		foodx = randm(0,7);
-		foody = randm(0,7);
+		u16 rand = randm(0,65535);
+		foodx = (u8) (((0x1100 & rand) >> 8) % 7);
+		foody = (u8) ((0x0011 & rand) % 7);
 		add_body(foodx,foody);
 	}
 
@@ -227,7 +228,7 @@ void setup() {
 	set(CLR,HIGH); //set clear pin to high because it is active low
 	RCC->APB1ENR |= (1<<2);
 	TIM4->CR1 = 1;
-	TIM4->PSC = 10000;
+	TIM4->PSC = 65535;
 	TIM4->ARR = 65535;
 	time=0;
 	counter=0;
